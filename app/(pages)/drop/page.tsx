@@ -10,6 +10,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DropZone } from "@/components/DropZone";
+import { fileToBase64 } from "@/utils/fileToBase64";
+import cloudinaryUpload from "@/utils/cloudinaryUpload";
+import { useSession } from "next-auth/react";
+import { toast } from "@/hooks/use-toast";
 
 function UploadingStatus({ status }: { status: string }) {
   return (
@@ -21,17 +25,37 @@ function UploadingStatus({ status }: { status: string }) {
 }
 
 const DropPage = () => {
+  const { data: session } = useSession();
+  const userId = session?.user?.id || "";
+
   const [uploading, setUploading] = useState(false);
 
-  const handleFileUpload = (file: File) => {
-    if (file.type !== "application/pdf") return;
-    console.log("Uploading file:", file);
-
+  const handleFileUpload = async (file: File) => {
     setUploading(true);
 
-    setTimeout(() => {
+    try {
+      console.log("image is selected");
+      if (file.type !== "application/pdf") return;
+
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Large file not allowed.",
+          description: "File size must be less than 10MB.",
+        });
+
+        return;
+      }
+
+      const baseImage = await fileToBase64(file);
+      const { secure_url } = await cloudinaryUpload(baseImage, userId);
+
+      console.log(secure_url);
+    } catch (error) {
+      console.error(error);
+    } finally {
       setUploading(false);
-    }, 5000);
+    }
   };
 
   return (

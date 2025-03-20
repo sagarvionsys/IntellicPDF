@@ -2,8 +2,8 @@
 
 import React from "react";
 import { SessionProvider } from "next-auth/react";
+import { Toaster } from "@/components/ui/toaster";
 // import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-// import { Toaster } from "react-hot-toast";
 
 // Create a client
 // const queryClient = new QueryClient({
@@ -18,9 +18,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider refetchInterval={15 * 60}>
       {/* <QueryClientProvider client={queryClient}> */}
-      {/* <Toaster position="top-center" /> */}
 
       {children}
+      <Toaster />
 
       {/* </QueryClientProvider> */}
     </SessionProvider>
