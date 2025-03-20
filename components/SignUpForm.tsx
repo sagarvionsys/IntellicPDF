@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { handleOAuth } from "@/actions/authentication";
 
 export function SignUpForm({
   className,
@@ -40,19 +43,23 @@ export function SignUpForm({
                 <Input id="password" type="password" required />
               </div>
               <Button type="submit" className="w-full">
-                Login
+                Create Account
               </Button>
-              <Button variant="outline" className="w-full">
-                Continue with Google
-              </Button>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
-              <Link href="/sign-in" className="underline underline-offset-4">
-                Sign In
-              </Link>
             </div>
           </form>
+          <Button
+            onClick={() => handleOAuth("google")}
+            variant="outline"
+            className="w-full mt-4"
+          >
+            Continue with Google
+          </Button>
+          <div className="mt-4 text-center text-sm space-y-2">
+            Already have an account?{" "}
+            <Link href="/sign-in" className="underline underline-offset-4">
+              Sign In
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>

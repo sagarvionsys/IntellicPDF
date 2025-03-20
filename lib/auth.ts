@@ -1,8 +1,8 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { validateUser } from "./actions/validateUser";
-import prisma from "./prisma/db";
+import { validateUser } from "@/actions/validateUser";
+import prisma from "@/prisma/db";
 
 export const authOptions: NextAuthOptions = {
   providers: [
