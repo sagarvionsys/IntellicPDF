@@ -5,6 +5,10 @@ import { ArrowRight, Bot, FileText, Send } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
+  // enable the auth.js auth with google or email
+  // save pdf files in cloudinary as folder per userID
+  // in db also save the url of file in documents per user
+
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       {/* Hero Section */}
