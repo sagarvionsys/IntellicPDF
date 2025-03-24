@@ -13,8 +13,9 @@ import { PineconeStore } from "@langchain/pinecone";
 import { Index, RecordMetadata } from "@pinecone-database/pinecone";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth";
+import getPdfUrl from "@/utils/getPdfUrl";
 
-export const indexName = "majestic-acacia";
+export const indexName = "intellic-pdf";
 
 const getSessionOrThrow = async () => {
   const session = await getServerSession(authOptions);
@@ -33,10 +34,9 @@ const nameSpaceExists = async (
 
 const generateFile = async (fileId: string) => {
   const session = await getSessionOrThrow();
-  const downloadUrl = `https://res.cloudinary.com/dcdtjkvdv/image/upload/v1742798237/user_${session.user.id}/${fileId}.pdf`;
 
   console.log("Downloading PDF...");
-  const response = await fetch(downloadUrl);
+  const response = await fetch(getPdfUrl(session.user.id, fileId));
   if (!response.ok) throw new Error("Failed to download file.");
 
   const arrayBuffer = await response.arrayBuffer();
@@ -64,8 +64,9 @@ export const generateEmbeddingInPineconeVectorStore = async (
 
   const embedding = new OpenAIEmbeddings({
     apiKey: process.env.OPENAI_API_KEY,
-    batchSize: 100,
+    batchSize: 500,
     model: "text-embedding-3-large",
+    configuration: { baseURL: "https://models.inference.ai.azure.com" },
   });
 
   if (await nameSpaceExists(index, fileId)) {
