@@ -5,68 +5,61 @@ import { useSession } from "next-auth/react";
 import { toast } from "@/hooks/use-toast";
 import { fileToBase64 } from "@/utils/fileToBase64";
 import cloudinaryUpload from "@/utils/cloudinaryUpload";
-import { useRouter } from "next/navigation";
 import { fileSaveToDB } from "@/actions/file";
 import generateEmbedding from "@/actions/generateEmbedding";
 
-export enum statusText {
+export enum StatusText {
   CHECKING = "Checking file...",
   UPLOADING = "Uploading to cloud...",
-  SAVINGTODB = "Saving File to database...",
-  GENERATING = "Generating AI Embedding, This will only take a few seconds...",
+  SAVING_TO_DB = "Saving file to database...",
+  GENERATING = "Generating AI embedding, this will only take a few seconds...",
 }
 
-export type Status = statusText[keyof statusText];
+export type Status = StatusText | null;
 
 const useUpload = () => {
   const { data: session } = useSession();
   const [uploading, setUploading] = useState(false);
   const [fileId, setFileId] = useState<string | null>(null);
-  const [status, setStatus] = useState<Status | null>(null);
+  const [status, setStatus] = useState<Status>(null);
 
   const uploadFile = async (file: File) => {
     if (!session?.user?.id) {
-      toast({
+      return toast({
         variant: "destructive",
         title: "Authentication required",
         description: "Please sign in to upload files.",
       });
-      return;
     }
 
-    //!....BASIC or PRO plan action
-
+    // Validate file type and size
     if (file.type !== "application/pdf") {
-      toast({
+      return toast({
         variant: "destructive",
         title: "Invalid file type",
         description: "Only PDF files are allowed.",
       });
-      return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      toast({
+      return toast({
         variant: "destructive",
         title: "File too large",
         description: "File size must be less than 10MB.",
       });
-      return;
     }
 
-    setUploading(true);
-    setTimeout(() => setStatus(statusText.CHECKING), 1000);
-
     try {
-      setStatus(statusText.UPLOADING);
+      setUploading(true);
+      setStatus(StatusText.UPLOADING);
+
       const baseImage = await fileToBase64(file);
       const { secure_url, uniqueFileName } = await cloudinaryUpload(
         baseImage,
         session.user.id
       );
 
-      setStatus(statusText.SAVINGTODB);
-
+      setStatus(StatusText.SAVING_TO_DB);
       await fileSaveToDB({
         fileId: uniqueFileName,
         fileName: file.name,
@@ -76,9 +69,10 @@ const useUpload = () => {
       });
 
       setFileId(uniqueFileName);
-      setStatus(statusText.GENERATING);
-      console.log("uniqueFileName--------", uniqueFileName);
-      generateEmbedding(uniqueFileName);
+      setStatus(StatusText.GENERATING);
+
+      await generateEmbedding(uniqueFileName);
+
       return secure_url;
     } catch (error) {
       console.error("Upload failed:", error);
@@ -87,9 +81,9 @@ const useUpload = () => {
         title: "Upload failed",
         description: "Something went wrong. Please try again.",
       });
-      setStatus("Upload failed. Please try again.");
     } finally {
       setUploading(false);
+      setStatus(null);
     }
   };
 

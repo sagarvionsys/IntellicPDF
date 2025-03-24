@@ -14,76 +14,74 @@ import { Index, RecordMetadata } from "@pinecone-database/pinecone";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth";
 
-// const model = new ChatOpenAI({
-//   apiKey: process.env.OPEN_AI_KEY,
-//   model: "gpt-4o",
-// });
-
 export const indexName = "majestic-acacia";
+
+const getSessionOrThrow = async () => {
+  const session = await getServerSession(authOptions);
+  if (!session) throw new Error("Please sign in to upload files.");
+  return session;
+};
 
 const nameSpaceExists = async (
   index: Index<RecordMetadata>,
   nameSpace: string
 ) => {
-  if (nameSpace === null) throw new Error("No nameSpace value provided");
+  if (!nameSpace) throw new Error("No nameSpace value provided");
   const { namespaces } = await index.describeIndexStats();
-  return namespaces?.[nameSpace] !== undefined;
+  return Boolean(namespaces?.[nameSpace]);
 };
 
 const generateFile = async (fileId: string) => {
-  const session = await getServerSession(authOptions);
-  if (!session) throw new Error("Please sign in to upload files.");
-  const downloadUrl = ` https://res.cloudinary.com/dcdtjkvdv/image/upload/v1742798237/user_${session.user.id}/${fileId}.pdf`;
+  const session = await getSessionOrThrow();
+  const downloadUrl = `https://res.cloudinary.com/dcdtjkvdv/image/upload/v1742798237/user_${session.user.id}/${fileId}.pdf`;
 
-  const result = await fetch(downloadUrl);
-  const data = await result.blob();
+  console.log("Downloading PDF...");
+  const response = await fetch(downloadUrl);
+  if (!response.ok) throw new Error("Failed to download file.");
 
-  console.log("loading pdf format.......");
-  const loader = new PDFLoader(data);
+  const arrayBuffer = await response.arrayBuffer();
+  const blob = new Blob([arrayBuffer], { type: "application/pdf" });
+
+  console.log("Loading PDF...");
+  const loader = new PDFLoader(blob);
   const files = await loader.load();
 
-  console.log("splitting the pdf into chunks");
-
+  console.log("Splitting PDF into chunks...");
   const splitter = new RecursiveCharacterTextSplitter();
-  const spiltFile = await splitter.splitDocuments(files);
+  const splitFile = await splitter.splitDocuments(files);
 
-  console.log(`splitted into ${spiltFile.length} parts`);
-  return spiltFile;
+  console.log(`Split into ${splitFile.length} parts`);
+  return splitFile;
 };
 
 export const generateEmbeddingInPineconeVectorStore = async (
   fileId: string
 ) => {
-  const session = await getServerSession(authOptions);
-  if (!session) throw new Error("Please sign in to upload files.");
+  await getSessionOrThrow();
 
-  let pinConeVectorStore;
-  console.log(".....Generating embedding for the split documents");
-
-  const embedding = new OpenAIEmbeddings({ apiKey: process.env.OPEN_AI_KEY });
+  console.log("Initializing Pinecone index...");
   const index = await pineConeClient.index(indexName);
 
-  const nameSpaceAlreadyExists = await nameSpaceExists(index, fileId);
+  const embedding = new OpenAIEmbeddings({
+    apiKey: process.env.OPENAI_API_KEY,
+    batchSize: 100,
+    model: "text-embedding-3-large",
+  });
 
-  if (nameSpaceAlreadyExists) {
-    console.log("emedding already exist , reusing");
-
-    pinConeVectorStore = await PineconeStore.fromExistingIndex(embedding, {
+  if (await nameSpaceExists(index, fileId)) {
+    console.log("Embedding already exists, reusing...");
+    return PineconeStore.fromExistingIndex(embedding, {
       pineconeIndex: index,
       namespace: fileId,
     });
-    return pinConeVectorStore;
-  } else {
-    const splitFile = await generateFile(fileId);
-    console.log("saving embedding into store");
-    pinConeVectorStore = await PineconeStore.fromDocuments(
-      splitFile,
-      embedding,
-      {
-        pineconeIndex: index,
-        namespace: fileId,
-      }
-    );
-    return pinConeVectorStore;
   }
+
+  console.log("Generating new embeddings...");
+  const splitFile = await generateFile(fileId);
+  console.log("Saving embeddings into Pinecone...");
+
+  return PineconeStore.fromDocuments(splitFile, embedding, {
+    pineconeIndex: index,
+    namespace: fileId,
+  });
 };
