@@ -22,7 +22,7 @@ type Plan = {
 };
 
 // Define available plans
-const PLANS: Record<"BASIC" | "PRO" | "PREMIUM", Plan> = {
+export const PLANS: Record<"BASIC" | "PRO" | "PREMIUM", Plan> = {
   BASIC: { FILES: 3, QUESTIONSPERFILE: 5 },
   PRO: { FILES: 10, QUESTIONSPERFILE: 25 },
   PREMIUM: { FILES: 25, QUESTIONSPERFILE: 75 },

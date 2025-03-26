@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import {
   Card,
@@ -12,6 +12,9 @@ import {
 import { DropZone } from "@/components/DropZone";
 import useUpload from "@/hooks/useUpload";
 import { useRouter } from "next/navigation";
+import useGetUser from "@/features/user/useGetUser";
+import { PLANS } from "../account/page";
+import { toast } from "@/hooks/use-toast";
 
 function UploadingStatus({ status }: { status: string | null }) {
   return (
@@ -24,6 +27,21 @@ function UploadingStatus({ status }: { status: string | null }) {
 
 const DropPage = () => {
   const router = useRouter();
+  const { user } = useGetUser();
+
+  const userData = user?.data;
+
+  const userPlan = (
+    userData?.plan && Object.keys(PLANS).includes(userData.plan)
+      ? (userData.plan as keyof typeof PLANS)
+      : "BASIC"
+  ) as keyof typeof PLANS;
+
+  const { FILES: maxFiles, QUESTIONSPERFILE: maxQuestionsPerFile } =
+    PLANS[userPlan];
+
+  const hasReachedFileLimit = (userData?.files?.length ?? 0) >= maxFiles;
+
   const { uploadFile, isPending, status, fileId } = useUpload();
 
   useEffect(() => {
@@ -45,7 +63,18 @@ const DropPage = () => {
                     Drop your PDF file here or click to select
                   </CardDescription>
                 </CardHeader>
-                <DropZone onFileSelect={(file: File) => uploadFile(file)} />
+                <DropZone
+                  onFileSelect={(file: File) => {
+                    if (hasReachedFileLimit)
+                      return toast({
+                        variant: "destructive",
+                        title: "Limit Reached",
+                        description:
+                          "You have reached the limit. Upgrade to continue!",
+                      });
+                    uploadFile(file);
+                  }}
+                />
               </>
             )}
           </CardContent>

@@ -51,8 +51,7 @@ const PdfChats = ({ pdfUrl }: { pdfUrl: string }) => {
       toast({
         variant: "destructive",
         title: "Limit Reached",
-        description:
-          "You have reached the free limit. Upgrade to PRO to continue!",
+        description: "You have reached the limit. Upgrade to to continue!",
       });
       return;
     }
