@@ -5,10 +5,6 @@ import { ArrowRight, Bot, FileText, Send } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
-  // enable the auth.js auth with google or email
-  // save pdf files in cloudinary as folder per userID
-  // in db also save the url of file in documents per user
-
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       {/* Hero Section */}
@@ -19,10 +15,8 @@ export default function Home() {
             {/* Left side - Content */}
             <div className="space-y-8">
               <div className="space-y-6">
-                <h1 className="text-6xl font-extrabold tracking-tight">
-                  Chat with your
-                  <br />
-                  <span className="text-black dark:text-white">Documents</span>
+                <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b dark:from-neutral-50 dark:to-neutral-400 from-neutral-500 to-neutral-800">
+                  Chat with your Documents
                 </h1>
                 <p className="text-xl text-muted-foreground leading-relaxed">
                   Upload your PDFs and get instant, intelligent answers powered

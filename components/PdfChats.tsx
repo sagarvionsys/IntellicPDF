@@ -9,6 +9,7 @@ import useGetChats from "@/features/chats/useGetChats";
 import askQuestion from "@/actions/askQuestion";
 import { toast } from "@/hooks/use-toast";
 import ChatSkeleton from "./ChatSkeleton";
+import { Chat } from "@prisma/client";
 
 const FREE_LIMIT = 5;
 
@@ -42,7 +43,10 @@ const PdfChats = ({ pdfUrl }: { pdfUrl: string }) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
-    const userMessageCount = messages.filter((m) => m.role === "HUMAN").length;
+    const userMessageCount = messages.filter(
+      (m: Message) => m.role === "HUMAN"
+    ).length;
+
     if (userMessageCount >= FREE_LIMIT) {
       toast({
         variant: "destructive",

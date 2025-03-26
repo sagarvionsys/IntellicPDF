@@ -1,93 +1,99 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "@/hooks/use-toast";
 import { fileToBase64 } from "@/utils/fileToBase64";
 import cloudinaryUpload from "@/utils/cloudinaryUpload";
-import { fileSaveToDB } from "@/actions/file";
+import { fileSaveToDB, updateFileToDB } from "@/actions/file";
 import generateEmbedding from "@/actions/generateEmbedding";
 
 export enum StatusText {
   CHECKING = "Checking file...",
   UPLOADING = "Uploading to cloud...",
   SAVING_TO_DB = "Saving file to database...",
-  GENERATING = "Generating AI embedding, this will only take a few seconds...",
+  GENERATING = "Generating AI embedding...",
 }
-
-export type Status = StatusText | null;
 
 const useUpload = () => {
   const { data: session } = useSession();
   const [uploading, setUploading] = useState(false);
-  const [fileId, setFileId] = useState<string | null>(null);
-  const [status, setStatus] = useState<Status>(null);
+  const [fileId, setFileId] = useState("");
+  const [status, setStatus] = useState<StatusText | null>(null);
 
-  const uploadFile = async (file: File) => {
-    if (!session?.user?.id) {
-      return toast({
-        variant: "destructive",
-        title: "Authentication required",
-        description: "Please sign in to upload files.",
-      });
-    }
+  const uploadFile = useCallback(
+    async (file: File) => {
+      if (!session?.user?.id) {
+        return toast({
+          variant: "destructive",
+          title: "Authentication required",
+          description: "Please sign in to upload files.",
+        });
+      }
 
-    // Validate file type and size
-    if (file.type !== "application/pdf") {
-      return toast({
-        variant: "destructive",
-        title: "Invalid file type",
-        description: "Only PDF files are allowed.",
-      });
-    }
+      if (file.type !== "application/pdf") {
+        return toast({
+          variant: "destructive",
+          title: "Invalid file type",
+          description: "Only PDF files are allowed.",
+        });
+      }
 
-    if (file.size > 10 * 1024 * 1024) {
-      return toast({
-        variant: "destructive",
-        title: "File too large",
-        description: "File size must be less than 10MB.",
-      });
-    }
+      if (file.size > 10 * 1024 * 1024) {
+        return toast({
+          variant: "destructive",
+          title: "File too large",
+          description: "File size must be less than 10MB.",
+        });
+      }
 
-    try {
       setUploading(true);
-      setStatus(StatusText.UPLOADING);
 
-      const baseImage = await fileToBase64(file);
-      const { secure_url, uniqueFileName } = await cloudinaryUpload(
-        baseImage,
-        session.user.id
-      );
+      try {
+        setStatus(StatusText.SAVING_TO_DB);
+        const fileId = await fileSaveToDB({
+          fileName: file.name,
+          fileSize: file.size,
+          type: file.type,
+          userId: session.user.id,
+        });
 
-      setStatus(StatusText.SAVING_TO_DB);
-      await fileSaveToDB({
-        fileId: uniqueFileName,
-        fileName: file.name,
-        fileSize: file.size,
-        fileUrl: secure_url,
-        type: file.type,
-      });
+        setStatus(StatusText.UPLOADING);
+        const base64File = await fileToBase64(file);
+        const secureUrl = await cloudinaryUpload(
+          base64File,
+          fileId,
+          session.user.id
+        );
 
-      setFileId(uniqueFileName);
-      setStatus(StatusText.GENERATING);
+        await updateFileToDB(fileId, secureUrl);
 
-      await generateEmbedding(uniqueFileName);
+        setStatus(StatusText.GENERATING);
+        await generateEmbedding(fileId);
 
-      return secure_url;
-    } catch (error) {
-      console.error("Upload failed:", error);
-      toast({
-        variant: "destructive",
-        title: "Upload failed",
-        description: "Something went wrong. Please try again.",
-      });
-    } finally {
-      setUploading(false);
-      setStatus(null);
-    }
-  };
+        setFileId(fileId);
+        toast({
+          variant: "default",
+          title: "Upload successful",
+          description: "Your file has been uploaded and processed.",
+        });
+        return secureUrl;
+      } catch (error) {
+        console.error("Upload failed:", error);
+        toast({
+          variant: "destructive",
+          title: "Upload failed",
+          description: "Something went wrong. Please try again.",
+        });
+      } finally {
+        setUploading(false);
+        setStatus(null);
+      }
+    },
+    [session?.user?.id]
+  );
 
-  return { uploadFile, fileId, isPending: uploading, status };
+  return { uploadFile, isPending: uploading, status, fileId };
 };
 
 export default useUpload;

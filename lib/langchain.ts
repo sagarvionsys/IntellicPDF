@@ -21,7 +21,7 @@ const model = new ChatOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
   model: "gpt-4o",
   temperature: 1,
-  maxTokens: 500,
+  maxTokens: 100,
   configuration: { baseURL: process.env.OPENAI_API_BASE_URL },
 });
 

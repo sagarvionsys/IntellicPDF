@@ -14,8 +14,8 @@ enum Role {
 }
 
 enum Plan {
- BASIC
- PRO
+  BASIC
+  PRO
 }
 
 model User {
@@ -27,26 +27,32 @@ model User {
   authProviderId String?  
   createdAt      DateTime @default(now())
   plan           Plan    @default(BASIC)
+  nextBilling    DateTime?
 
+  files          File[]
 }
 
 model File {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  fileId    String  @unique
   userId    String  @db.ObjectId
-  fileUrl   String
+  fileUrl   String?
   fileName  String
   fileSize  Int
   type      String
   createdAt DateTime @default(now())
+
+  user      User   @relation(fields: [userId], references: [id])
+  chats     Chat[] 
 }
 
 model Chat {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  fileId    String   
+  fileId    String   @db.ObjectId
   userId    String   @db.ObjectId
   role      Role     
   message   String
   createdAt DateTime @default(now())
+
+  file      File   @relation(fields: [fileId], references: [id])
 
 }

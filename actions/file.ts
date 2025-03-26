@@ -1,30 +1,34 @@
 "use server";
 
-import { authOptions } from "@/lib/auth";
 import prisma from "@/prisma/db";
-import { getServerSession } from "next-auth";
 
-interface fileDate {
-  fileId: string;
-  fileUrl: string;
+export const fileSaveToDB = async ({
+  fileName,
+  fileSize,
+  type,
+  userId,
+}: {
   fileName: string;
   fileSize: number;
   type: string;
-}
+  userId: string;
+}) => {
+  const newFile = await prisma.file.create({
+    data: {
+      fileUrl: "",
+      userId,
+      fileName,
+      fileSize,
+      type,
+    },
+  });
+  return newFile?.id;
+};
 
-export const fileSaveToDB = async (fileData: fileDate) => {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session) throw new Error("Please sign in to upload files.");
-
-    const file = await prisma.file.create({
-      data: {
-        ...fileData,
-        userId: session?.user.id,
-      },
-    });
-    return file;
-  } catch (error: any) {
-    throw error;
-  }
+export const updateFileToDB = async (fileId: string, secure_url: string) => {
+  const newFile = await prisma.file.update({
+    where: { id: fileId },
+    data: { fileUrl: secure_url },
+  });
+  return newFile;
 };

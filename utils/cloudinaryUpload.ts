@@ -1,41 +1,29 @@
 "use server";
-import cloudinary from "@/lib/cloudinary";
-import { v4 as uuidv4 } from "uuid";
 
-export type CloudinaryUploadResult = {
-  secure_url: string;
-  public_id: string;
-  uniqueFileName: string;
-};
+import cloudinary from "@/lib/cloudinary";
 
 const cloudinaryUpload = async (
   base64File: string,
+  fileId: string,
   userId: string
-): Promise<CloudinaryUploadResult> => {
-  return new Promise<CloudinaryUploadResult>((resolve, reject) => {
-    const uniqueFileName = `file_${uuidv4()}`;
-
+): Promise<string> => {
+  return new Promise<string>((resolve, reject) => {
     cloudinary.uploader.upload(
       base64File,
       {
         resource_type: "auto",
         folder: `user_${userId}`,
-        public_id: uniqueFileName,
+        public_id: fileId,
         use_filename: false,
         overwrite: false,
       },
-      (error: any, result: any) => {
+      async (error: any, result: any) => {
         if (error) {
           console.log(error);
           return reject("Error while uploading file to Cloudinary");
         }
         console.log("File uploaded successfully!");
-
-        resolve({
-          secure_url: result.secure_url,
-          public_id: result.public_id,
-          uniqueFileName: uniqueFileName,
-        });
+        resolve(result.secure_url);
       }
     );
   });
