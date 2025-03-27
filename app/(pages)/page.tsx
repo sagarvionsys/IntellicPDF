@@ -47,7 +47,7 @@ export default function Home() {
 
             {/* Right side - Demo UI */}
             <div className="relative">
-              <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl  border overflow-hidden">
+              <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl py-6  border overflow-hidden">
                 {/* Window Controls */}
                 <div className="px-4 py-3 border-b bg-zinc-50 dark:bg-zinc-900 flex items-center gap-4">
                   <div className="flex gap-1.5">
@@ -61,7 +61,7 @@ export default function Home() {
                 </div>
 
                 {/* Content Area */}
-                <div className="grid grid-cols-2 h-[500px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 h-[500px] ">
                   {/* PDF Preview */}
                   <div className="border-r p-6 bg-zinc-50 dark:bg-zinc-900">
                     <div className="space-y-4">

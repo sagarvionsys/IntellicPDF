@@ -1,5 +1,6 @@
+"use client";
+
 import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,11 +10,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-const plans = [
+import { Button } from "@/components/ui/button";
+import CheakOutModal from "@/components/CheakOutModal";
+import { useState } from "react";
+
+export type Plan = {
+  name: string;
+  price: string;
+  priceUnit: string;
+  description: string;
+  features: string[];
+};
+
+const plans: Plan[] = [
   {
-    name: "Basic",
+    name: "BASIC",
     price: "Free",
-    priceUnit: "", //
+    priceUnit: "",
     description: "Perfect for starters",
     features: [
       "3 documents",
@@ -24,7 +37,7 @@ const plans = [
     ],
   },
   {
-    name: "Pro",
+    name: "PRO",
     price: "7",
     priceUnit: "USD/mo",
     description: "Best for professionals",
@@ -38,7 +51,7 @@ const plans = [
     ],
   },
   {
-    name: "Premium",
+    name: "PREMIUM",
     price: "15",
     priceUnit: "USD/mo",
     description: "For teams and businesses",
@@ -53,8 +66,9 @@ const plans = [
 ];
 
 export default function PricingPage() {
+  const [isOpen, setisOpen] = useState<boolean>(false);
   return (
-    <div className="py-12">
+    <div className="py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight">
@@ -88,9 +102,22 @@ export default function PricingPage() {
                   ))}
                 </ul>
               </CardContent>
-              <CardFooter>
-                <Button className="w-full">Get Started</Button>
-              </CardFooter>
+              {plan.name !== "BASIC" && (
+                <CardFooter>
+                  <Button
+                    onClick={() => setisOpen((prev) => !prev)}
+                    className="w-full capitalize"
+                  >
+                    Upgrade to {plan.name.toLocaleLowerCase()}
+                  </Button>
+                </CardFooter>
+              )}
+              {/* modal for PLAN scheakout */}
+              <CheakOutModal
+                plan={plan}
+                isOpen={isOpen}
+                onClose={() => setisOpen(false)}
+              />
             </Card>
           ))}
         </div>
