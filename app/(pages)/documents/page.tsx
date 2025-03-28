@@ -4,9 +4,14 @@ import FileCards from "@/components/account/FileCards";
 import useGetUser from "@/features/user/useGetUser";
 import React from "react";
 import { ExtendedUser, PLANS } from "../account/page";
+import { FileCardsSkeleton } from "@/components/skeleton-ui";
+import Error from "@/components/Error";
 
 const page = () => {
   const { user, userPending, userError } = useGetUser();
+
+  if (userPending) return <FileCardsSkeleton />;
+  if (userError) return <Error />;
 
   const userData = user?.data as ExtendedUser;
   const userPlan = PLANS[userData?.plan as keyof typeof PLANS]

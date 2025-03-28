@@ -10,6 +10,8 @@ import {
   File as PrismaFile,
   Chat as PrismaChat,
 } from "@prisma/client";
+import { AccountPageSkeleton } from "@/components/skeleton-ui";
+import Error from "@/components/Error";
 
 type Plan = {
   FILES: number;
@@ -33,14 +35,12 @@ export const PLANS: Record<"BASIC" | "PRO" | "PREMIUM", Plan> = {
 export default function AccountPage() {
   const { user, userPending, userError } = useGetUser();
 
-  if (userPending) return <p className="text-center text-lg">Loading...</p>;
-  if (userError)
-    return <p className="text-center text-lg">Error loading user data</p>;
+  if (userPending) return <AccountPageSkeleton />;
+  if (userError) return <Error />;
 
   const userData = user?.data as ExtendedUser;
   const userTransactions = userData.transactions ?? [];
 
-  // Get user plan and ensure it's a valid option
   const userPlan = PLANS[userData?.plan as keyof typeof PLANS]
     ? (userData.plan as keyof typeof PLANS)
     : "BASIC";
