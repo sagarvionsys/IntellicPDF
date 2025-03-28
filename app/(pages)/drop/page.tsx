@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import {
+  Airplay,
+  CloudUpload,
+  Database,
+  Loader2,
+  Settings,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,16 +16,31 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DropZone } from "@/components/DropZone";
-import useUpload from "@/hooks/useUpload";
+import useUpload, { StatusText } from "@/hooks/useUpload";
 import { useRouter } from "next/navigation";
 import useGetUser from "@/features/user/useGetUser";
 import { PLANS } from "../account/page";
 import { toast } from "@/hooks/use-toast";
 
-function UploadingStatus({ status }: { status: string | null }) {
+const statusIcons: Record<StatusText, JSX.Element> = {
+  [StatusText.CHECKING]: (
+    <Settings className="h-6 w-6 animate-spin text-primary" />
+  ),
+  [StatusText.UPLOADING]: (
+    <CloudUpload className="h-6 w-6 animate-bounce text-primary" />
+  ),
+  [StatusText.SAVING_TO_DB]: <Database className="h-6 w-6 text-primary" />,
+  [StatusText.GENERATING]: (
+    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+  ),
+};
+
+function UploadingStatus({ status }: { status: StatusText | null }) {
+  if (!status) return null;
+
   return (
-    <div className="flex items-center gap-3 p-4 bg-muted rounded-lg justify-center">
-      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+    <div className="flex items-center gap-3 mt-6 p-4 bg-muted rounded-lg justify-center">
+      {statusIcons[status]}
       <p className="font-medium">{status}</p>
     </div>
   );
@@ -27,7 +48,7 @@ function UploadingStatus({ status }: { status: string | null }) {
 
 const DropPage = () => {
   const router = useRouter();
-  const { user } = useGetUser();
+  const { user, userPending } = useGetUser();
 
   const userData = user?.data;
 
@@ -37,9 +58,7 @@ const DropPage = () => {
       : "BASIC"
   ) as keyof typeof PLANS;
 
-  const { FILES: maxFiles, QUESTIONSPERFILE: maxQuestionsPerFile } =
-    PLANS[userPlan];
-
+  const { FILES: maxFiles } = PLANS[userPlan];
   const hasReachedFileLimit = (userData?.files?.length ?? 0) >= maxFiles;
 
   const { uploadFile, isPending, status, fileId } = useUpload();
@@ -54,7 +73,7 @@ const DropPage = () => {
         <Card>
           <CardContent className="space-y-4">
             {isPending ? (
-              <UploadingStatus status={status as string} />
+              <UploadingStatus status={status} />
             ) : (
               <>
                 <CardHeader>

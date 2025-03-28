@@ -51,7 +51,7 @@ const ProfileCard = ({ userData }: { userData: ExtendedUser }) => {
           </div>
 
           {/* Stats */}
-          <div className="mt-6 grid grid-cols-3 gap-4 border-t pt-6">
+          <div className="mt-6 grid grid-cols-2 gap-4 border-t pt-6">
             <div className="text-center">
               <div className="text-2xl font-bold">
                 {userData?.files?.length || 0}
@@ -61,10 +61,6 @@ const ProfileCard = ({ userData }: { userData: ExtendedUser }) => {
             <div className="text-center">
               <div className="text-2xl font-bold">{totalQuestions}</div>
               <div className="text-xs text-muted-foreground">Questions</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">45%</div>
-              <div className="text-xs text-muted-foreground">Storage Used</div>
             </div>
           </div>
         </div>
