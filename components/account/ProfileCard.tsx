@@ -1,22 +1,22 @@
 "use client";
 
 import React from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
-import { User as UserIcon, Mail, Calendar, MapPin } from "lucide-react";
-import { User } from "@prisma/client";
+import { Mail, Calendar } from "lucide-react";
 
-const ProfileCard = ({ userData }: { userData: User }) => {
+import { ExtendedUser } from "@/app/(pages)/account/page";
+
+const ProfileCard = ({ userData }: { userData: ExtendedUser }) => {
+  const totalQuestions =
+    userData.files?.reduce(
+      (total, file) =>
+        total + file?.chats?.filter((chat) => chat.role === "HUMAN")?.length,
+      0
+    ) || 0;
+
   return (
     <Card className="overflow-hidden border bg-card">
       <div className="relative px-6 py-3">
@@ -63,11 +63,13 @@ const ProfileCard = ({ userData }: { userData: User }) => {
           {/* Stats */}
           <div className="mt-6 grid grid-cols-3 gap-4 border-t pt-6">
             <div className="text-center">
-              <div className="text-2xl font-bold">24</div>
+              <div className="text-2xl font-bold">
+                {userData?.files?.length || 0}
+              </div>
               <div className="text-xs text-muted-foreground">Documents</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">156</div>
+              <div className="text-2xl font-bold">{totalQuestions}</div>
               <div className="text-xs text-muted-foreground">Questions</div>
             </div>
             <div className="text-center">

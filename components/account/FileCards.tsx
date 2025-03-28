@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { Chat, File } from "@prisma/client";
+import { Chat } from "@prisma/client";
 import { FileText, MessageSquare } from "lucide-react";
 import { Badge } from "../ui/badge";
 
@@ -21,19 +21,18 @@ export default function FileCards({
   maxQuestionsPerFile,
   userPlan,
 }: FileCardProps) {
-  const humanQuestions = files?.filter((chat: Chat) => chat.role === "HUMAN");
-
-  const hasReachedLimit =
-    userPlan === "BASIC" && humanQuestions.length >= maxQuestionsPerFile;
-
   return (
     <div className="mb-8">
       <h2 className="text-xl font-semibold mb-4">Your Documents</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {files.length > 0 &&
-          files?.map((file: any) => {
-            const questionsCount = file.questions?.length || 0;
-            const isLimitReached = questionsCount >= maxQuestionsPerFile;
+          files.map((file: any) => {
+            const humanQuestions = file?.chats
+              ? file.chats.filter((chat: Chat) => chat.role === "HUMAN").length
+              : 0;
+
+            const hasReachedLimit =
+              userPlan === "BASIC" && humanQuestions >= maxQuestionsPerFile;
 
             return (
               <Card
@@ -44,10 +43,10 @@ export default function FileCards({
                   <div className="flex items-center justify-between mb-2">
                     <FileText className="h-5 w-5 text-primary" />
                     <Badge
-                      variant={isLimitReached ? "destructive" : "secondary"}
+                      variant={hasReachedLimit ? "destructive" : "secondary"}
                       className="text-xs"
                     >
-                      {questionsCount}/{maxQuestionsPerFile} Questions
+                      {humanQuestions}/{maxQuestionsPerFile} Questions
                     </Badge>
                   </div>
                   <h3 className="font-medium truncate">{file.fileName}</h3>
@@ -59,16 +58,20 @@ export default function FileCards({
 
                 <CardContent className="p-4">
                   <div className="space-y-2">
-                    {file.questions?.length > 0 ? (
-                      file.questions?.map((question: any) => (
-                        <div
-                          key={question.id}
-                          className="flex items-start gap-2 text-sm"
-                        >
-                          <MessageSquare className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                          <p className="text-sm truncate">{question.message}</p>
-                        </div>
-                      ))
+                    {humanQuestions > 0 ? (
+                      file.chats
+                        .filter((chat: Chat) => chat.role === "HUMAN")
+                        .map((question: any) => (
+                          <div
+                            key={question.id}
+                            className="flex items-start gap-2 text-sm"
+                          >
+                            <MessageSquare size={15} />
+                            <p className="text-xs truncate">
+                              {question.message}
+                            </p>
+                          </div>
+                        ))
                     ) : (
                       <p className="text-sm text-muted-foreground italic">
                         No questions yet

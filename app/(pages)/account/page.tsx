@@ -5,11 +5,25 @@ import TransactionTable from "@/components/account/TransactionTable";
 import FileCards from "@/components/account/FileCards";
 import SubscriptionCard from "@/components/account/SubcriptionCard";
 import ProfileCard from "@/components/account/ProfileCard";
+import {
+  Transaction,
+  User as PrismaUser,
+  File as PrismaFile,
+  Chat as PrismaChat,
+} from "@prisma/client";
 
 type Plan = {
   FILES: number;
   QUESTIONSPERFILE: number;
 };
+export interface File extends PrismaFile {
+  chats: PrismaChat[];
+}
+
+export interface ExtendedUser extends PrismaUser {
+  files: File[];
+  transactions: Transaction[];
+}
 
 export const PLANS: Record<"BASIC" | "PRO" | "PREMIUM", Plan> = {
   BASIC: { FILES: 3, QUESTIONSPERFILE: 5 },
@@ -24,7 +38,7 @@ export default function AccountPage() {
   if (userError)
     return <p className="text-center text-lg">Error loading user data</p>;
 
-  const userData = user?.data ?? {};
+  const userData = user?.data as ExtendedUser;
   const userTransactions = userData.transactions ?? [];
 
   // Get user plan and ensure it's a valid option

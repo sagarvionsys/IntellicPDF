@@ -8,15 +8,12 @@ import {
 } from "@/components/ui/card";
 import { CreditCard } from "lucide-react";
 import { Progress } from "@/components/ui/progress"; // Ensure you have a Progress component
-import { PLANS } from "@/app/(pages)/account/page";
+import { ExtendedUser, PLANS } from "@/app/(pages)/account/page";
 import { Badge } from "@/components/ui/badge"; // Ensure correct import path
 
 interface SubscriptionCardProps {
   userPlan: keyof typeof PLANS;
-  userData: {
-    files?: { length: number };
-    nextBilling?: string;
-  };
+  userData: ExtendedUser;
 }
 
 const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
