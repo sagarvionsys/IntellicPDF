@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import createOrder from "@/actions/createOrder";
 import { toast } from "@/hooks/use-toast";
 import useUpgrade from "@/features/user/useUpgrade";
-import { Plan as PlanType } from "@/app/(pages)/pricing/page";
+import { Plan as PlanType } from "./PricingPage";
 import { Plan } from "@prisma/client";
 import { Button } from "../ui/button";
 

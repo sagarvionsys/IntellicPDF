@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Plan } from "@/app/(pages)/pricing/page";
+import { Plan } from "./PricingPage";
 import { VerifyMail } from "@/actions/authentication";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
