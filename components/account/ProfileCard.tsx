@@ -3,10 +3,7 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { signOut } from "next-auth/react";
 import { Mail, Calendar } from "lucide-react";
-
 import { ExtendedUser } from "@/app/(pages)/account/page";
 
 const ProfileCard = ({ userData }: { userData: ExtendedUser }) => {
@@ -33,13 +30,6 @@ const ProfileCard = ({ userData }: { userData: ExtendedUser }) => {
                 </Badge>
               </div>
             </div>
-            <Button
-              variant="destructive"
-              className="shadow-sm transition-all hover:shadow-md"
-              onClick={() => signOut({ callbackUrl: "/sign-in" })}
-            >
-              Log Out
-            </Button>
           </div>
 
           {/* Contact Details */}

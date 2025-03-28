@@ -33,6 +33,7 @@ export const authOptions: NextAuthOptions = {
             id: user._id,
             email: user.email,
             plan: user.plan,
+            name: user.name,
           };
         } catch (error) {
           console.error("Authorization Error:", error);
@@ -85,7 +86,7 @@ export const authOptions: NextAuthOptions = {
               plan: "BASIC",
             },
           });
-
+          user.name = existingUser.name;
           user.plan = existingUser.plan;
           user.id = existingUser.id;
           user.authProviderId = existingUser.authProviderId ?? undefined;

@@ -2,7 +2,6 @@
 
 import useGetUser from "@/features/user/useGetUser";
 import TransactionTable from "@/components/account/TransactionTable";
-import FileCards from "@/components/account/FileCards";
 import SubscriptionCard from "@/components/account/SubcriptionCard";
 import ProfileCard from "@/components/account/ProfileCard";
 import {
@@ -53,11 +52,6 @@ export default function AccountPage() {
           <ProfileCard userData={userData} />
           <SubscriptionCard userPlan={userPlan} userData={userData} />
         </section>
-        <FileCards
-          files={userData.files ?? []}
-          maxQuestionsPerFile={PLANS[userPlan].QUESTIONSPERFILE}
-          userPlan={userPlan}
-        />
         <TransactionTable transactions={userTransactions} />
       </div>
     </div>

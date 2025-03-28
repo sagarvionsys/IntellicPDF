@@ -21,7 +21,7 @@ const model = new ChatOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
   model: "gpt-4o",
   temperature: 1,
-  maxTokens: 100,
+  maxTokens: 500,
   configuration: { baseURL: process.env.OPENAI_API_BASE_URL },
 });
 
@@ -78,7 +78,10 @@ const generateFile = async (fileId: string) => {
   const files = await loader.load();
 
   console.log("Splitting PDF into chunks...");
-  const splitter = new RecursiveCharacterTextSplitter();
+  const splitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 100,
+    chunkOverlap: 200,
+  });
   const splitFile = await splitter.splitDocuments(files);
 
   console.log(`Split into ${splitFile.length} parts`);
@@ -178,7 +181,6 @@ const generateLangChainCompletion = async (fileId: string, input: string) => {
     input,
   });
 
-  console.log(reply.answer);
   return reply.answer;
 };
 

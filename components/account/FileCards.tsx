@@ -1,14 +1,12 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+"use client";
+
+import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { Chat } from "@prisma/client";
-import { FileText, MessageSquare } from "lucide-react";
+import { FileText, MessageSquare, Plus } from "lucide-react";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
 
 interface FileCardProps {
   files: any;
@@ -21,9 +19,14 @@ export default function FileCards({
   maxQuestionsPerFile,
   userPlan,
 }: FileCardProps) {
+  const router = useRouter();
   return (
     <div className="mb-8">
-      <h2 className="text-xl font-semibold mb-4">Your Documents</h2>
+      <h2 className="text-xl font-semibold my-4">Your Documents</h2>
+      <Button onClick={() => router.push("/drop")} className="mb-3">
+        <Plus className="w-5 h-5 mr-2" />
+        Add Document
+      </Button>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {files.length > 0 &&
           files.map((file: any) => {
