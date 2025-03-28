@@ -1,12 +1,12 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { Button } from "./ui/button";
 import createOrder from "@/actions/createOrder";
 import { toast } from "@/hooks/use-toast";
 import useUpgrade from "@/features/user/useUpgrade";
 import { Plan as PlanType } from "@/app/(pages)/pricing/page";
 import { Plan } from "@prisma/client";
+import { Button } from "../ui/button";
 
 interface PayButtonProps {
   plan: PlanType;

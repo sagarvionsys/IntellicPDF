@@ -3,7 +3,7 @@
 import React, { useState, useTransition, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bot, FileText, Send, User } from "lucide-react";
-import { Input } from "./ui/input";
+import { Input } from "../ui/input";
 import { Message } from "@/app/(pages)/pdf/[id]/page";
 import useGetChats from "@/features/chats/useGetChats";
 import askQuestion from "@/actions/askQuestion";

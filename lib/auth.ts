@@ -66,12 +66,18 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         try {
-          const { email, image, id } = user;
+          const { email, image, id, name } = user;
 
           const existingUser = await prisma.user.upsert({
             where: { email },
-            update: { image, authProviderId: id, authProvider: "google" },
+            update: {
+              image,
+              authProviderId: id,
+              authProvider: "google",
+              name: name ?? email.split("@")[0],
+            },
             create: {
+              name: name ?? email.split("@")[0],
               email,
               image,
               authProviderId: id,
@@ -101,18 +107,6 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/auth/sign-in",
     error: "/auth/sign-in",
-  },
-
-  cookies: {
-    sessionToken: {
-      name: `__Secure-next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-      },
-    },
   },
 
   secret: process.env.AUTH_SECRET,

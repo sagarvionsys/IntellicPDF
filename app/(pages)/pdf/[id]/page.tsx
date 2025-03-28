@@ -1,8 +1,8 @@
 "use client";
 
-import PdfChats from "@/components/PdfChats";
-import PdfHeader from "@/components/PdfHeader";
-import PdfPreview from "@/components/PdfPreview";
+import PdfChats from "@/components/chat/PdfChats";
+import PdfHeader from "@/components/chat/PdfHeader";
+import PdfPreview from "@/components/chat/PdfPreview";
 import getPdfUrl from "@/utils/getPdfUrl";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";

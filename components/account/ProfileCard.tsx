@@ -1,0 +1,84 @@
+"use client";
+
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { signOut } from "next-auth/react";
+import { User as UserIcon, Mail, Calendar, MapPin } from "lucide-react";
+import { User } from "@prisma/client";
+
+const ProfileCard = ({ userData }: { userData: User }) => {
+  return (
+    <Card className="overflow-hidden border bg-card">
+      <div className="relative px-6 py-3">
+        {/* Profile Info */}
+        <div className="mt-2 space-y-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-2xl font-semibold tracking-tight">
+                {userData?.name || "Anonymous User"}
+              </h3>
+              <div className="mt-2 flex items-center gap-4">
+                <Badge variant="secondary" className="font-normal">
+                  {userData.plan} Member
+                </Badge>
+              </div>
+            </div>
+            <Button
+              variant="destructive"
+              className="shadow-sm transition-all hover:shadow-md"
+              onClick={() => signOut({ callbackUrl: "/sign-in" })}
+            >
+              Log Out
+            </Button>
+          </div>
+
+          {/* Contact Details */}
+          <div className="mt-6 grid gap-4 border-t pt-6 sm:grid-cols-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Mail className="h-4 w-4" />
+              <span>{userData?.email}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>
+                Joined{" "}
+                {new Date(userData.createdAt).toLocaleDateString("en-US", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </span>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="mt-6 grid grid-cols-3 gap-4 border-t pt-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold">24</div>
+              <div className="text-xs text-muted-foreground">Documents</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold">156</div>
+              <div className="text-xs text-muted-foreground">Questions</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold">45%</div>
+              <div className="text-xs text-muted-foreground">Storage Used</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
+export default ProfileCard;

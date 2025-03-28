@@ -3,12 +3,12 @@
 import { useState } from "react";
 
 import { Plan } from "@/app/(pages)/pricing/page";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import { VerifyMail } from "@/actions/authentication";
 import { toast } from "@/hooks/use-toast";
-import Spinner from "./Spinner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import Spinner from "../Spinner";
 import PayButton from "./PayButton";
 
 const CheckOutModal = ({

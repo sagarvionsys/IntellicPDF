@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
-import CheakOutModal from "@/components/CheakOutModal";
+import CheakOutModal from "@/components/pricing/CheakOutModal";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 
@@ -70,9 +70,7 @@ export default function PricingPage() {
   const { data: session } = useSession();
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
-  // Get the user's current plan from the session
-  const currentPlan = session?.user?.plan;
-  console.log(session);
+  const currentPlan = session?.user?.plan || "BASIC";
 
   return (
     <div className="py-10">
