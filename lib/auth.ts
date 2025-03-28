@@ -2,7 +2,9 @@ import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { validateUser } from "@/actions/validateUser";
-import prisma from "@/prisma/db";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -13,17 +15,29 @@ export const authOptions: NextAuthOptions = {
 
     CredentialsProvider({
       id: "credentials",
-      name: "Credentials",
+      name: "Email & Password",
       credentials: {
-        email: { label: "Email", type: "email" },
+        email: {
+          label: "Email",
+          type: "email",
+          placeholder: "you@example.com",
+        },
         password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
-        const user = await validateUser(credentials);
-        return {
-          id: user._id,
-          email: user.email,
-        };
+        try {
+          const user = await validateUser(credentials);
+          if (!user) throw new Error("Invalid email or password");
+
+          return {
+            id: user._id,
+            email: user.email,
+            plan: user.plan,
+          };
+        } catch (error) {
+          console.error("Authorization Error:", error);
+          throw new Error("Invalid credentials");
+        }
       },
     }),
   ],
@@ -32,8 +46,9 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id as string;
-        token.authProviderId = user?.authProviderId || null;
+        token.authProviderId = user.authProviderId || null;
         token.image = user.image || null;
+        token.plan = user.plan as string;
       }
       return token;
     },
@@ -43,6 +58,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.image = token.image as string;
         session.user.authProviderId = token.authProviderId as string;
+        session.user.plan = token.plan as string;
       }
       return session;
     },
@@ -60,11 +76,14 @@ export const authOptions: NextAuthOptions = {
               image,
               authProviderId: id,
               authProvider: "google",
+              plan: "BASIC",
             },
           });
 
+          user.plan = existingUser.plan;
           user.id = existingUser.id;
           user.authProviderId = existingUser.authProviderId ?? undefined;
+
           return true;
         } catch (error) {
           console.error("Google sign-in error:", error);
@@ -74,4 +93,28 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
   },
+
+  session: {
+    strategy: "jwt",
+  },
+
+  pages: {
+    signIn: "/auth/sign-in",
+    error: "/auth/sign-in",
+  },
+
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
+
+  secret: process.env.AUTH_SECRET,
+  useSecureCookies: process.env.NODE_ENV === "production",
 };

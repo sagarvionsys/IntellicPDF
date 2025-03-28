@@ -13,10 +13,11 @@ import {
 import { Button } from "@/components/ui/button";
 import CheakOutModal from "@/components/CheakOutModal";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 
 export type Plan = {
   name: string;
-  price: string;
+  price: number;
   priceUnit: string;
   description: string;
   features: string[];
@@ -25,7 +26,7 @@ export type Plan = {
 const plans: Plan[] = [
   {
     name: "BASIC",
-    price: "Free",
+    price: 0,
     priceUnit: "",
     description: "Perfect for starters",
     features: [
@@ -38,7 +39,7 @@ const plans: Plan[] = [
   },
   {
     name: "PRO",
-    price: "7",
+    price: 7,
     priceUnit: "USD/mo",
     description: "Best for professionals",
     features: [
@@ -52,7 +53,7 @@ const plans: Plan[] = [
   },
   {
     name: "PREMIUM",
-    price: "15",
+    price: 15,
     priceUnit: "USD/mo",
     description: "For teams and businesses",
     features: [
@@ -66,7 +67,13 @@ const plans: Plan[] = [
 ];
 
 export default function PricingPage() {
-  const [isOpen, setisOpen] = useState<boolean>(false);
+  const { data: session } = useSession();
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+
+  // Get the user's current plan from the session
+  const currentPlan = session?.user?.plan;
+  console.log(session);
+
   return (
     <div className="py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -80,48 +87,62 @@ export default function PricingPage() {
         </div>
 
         <div className="mt-16 grid gap-8 md:grid-cols-3 items-center">
-          {plans.map((plan) => (
-            <Card key={plan.name} className="flex flex-col border">
-              <CardHeader>
-                <CardTitle>{plan.name}</CardTitle>
-                <CardDescription>{plan.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <div className="text-4xl font-bold mb-4">
-                  {plan.price}
-                  {plan.priceUnit && (
-                    <span className="text-lg"> {plan.priceUnit}</span>
-                  )}
-                </div>
-                <ul className="space-y-3">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-center">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              {plan.name !== "BASIC" && (
+          {plans.map((plan) => {
+            const shouldShowButton =
+              (currentPlan === "BASIC" && plan.name !== "BASIC") ||
+              (currentPlan === "PRO" && plan.name === "PREMIUM");
+
+            return (
+              <Card key={plan.name} className="flex flex-col border">
+                <CardHeader>
+                  <CardTitle>{plan.name}</CardTitle>
+                  <CardDescription>{plan.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <div className="text-4xl font-bold mb-4">
+                    {plan.price}
+                    {plan.priceUnit && (
+                      <span className="text-lg"> {plan.priceUnit}</span>
+                    )}
+                  </div>
+                  <ul className="space-y-3">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-center">
+                        <Check className="h-4 w-4 text-green-500 mr-2" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+
                 <CardFooter>
-                  <Button
-                    onClick={() => setisOpen((prev) => !prev)}
-                    className="w-full capitalize"
-                  >
-                    Upgrade to {plan.name.toLocaleLowerCase()}
-                  </Button>
+                  {shouldShowButton ? (
+                    <Button
+                      onClick={() => setSelectedPlan(plan)}
+                      className="w-full capitalize"
+                    >
+                      Upgrade to {plan.name.toLowerCase()}
+                    </Button>
+                  ) : currentPlan === plan.name ? (
+                    <Button disabled className="w-full">
+                      Your Current Plan
+                    </Button>
+                  ) : null}
                 </CardFooter>
-              )}
-              {/* modal for PLAN scheakout */}
-              <CheakOutModal
-                plan={plan}
-                isOpen={isOpen}
-                onClose={() => setisOpen(false)}
-              />
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       </div>
+
+      {/* Modal for selected plan */}
+      {selectedPlan && (
+        <CheakOutModal
+          plan={selectedPlan}
+          isOpen={selectedPlan !== null}
+          onClose={() => setSelectedPlan(null)}
+        />
+      )}
     </div>
   );
 }

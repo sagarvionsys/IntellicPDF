@@ -23,5 +23,6 @@ export const validateUser = async (credentials?: {
   return {
     _id: user.id.toString(),
     email: user.email,
+    plan: user.plan,
   };
 };

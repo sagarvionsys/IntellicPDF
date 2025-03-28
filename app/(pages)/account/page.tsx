@@ -9,11 +9,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import useGetUser from "@/features/user/useGetUser";
 import FileCard from "@/components/FileCard";
 import { File } from "@prisma/client";
+import { Button } from "@/components/ui/button";
 
 // Define plan structure
 type Plan = {
@@ -29,8 +30,8 @@ export const PLANS: Record<"BASIC" | "PRO" | "PREMIUM", Plan> = {
 };
 
 export default function AccountPage() {
-  const { data: session } = useSession();
   const { user, userPending, userError } = useGetUser();
+  console.log({ user });
 
   if (userPending) return <p className="text-center">Loading...</p>;
   if (userError)
@@ -79,6 +80,12 @@ export default function AccountPage() {
                 </Avatar>
                 <div>
                   <h3 className="text-lg font-medium">{userData?.email}</h3>
+                  <Button
+                    variant={"destructive"}
+                    onClick={() => signOut({ callbackUrl: "/sign-in" })}
+                  >
+                    LogOut
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -96,6 +103,11 @@ export default function AccountPage() {
                   <CreditCard className="h-6 w-6" />
                   <div>
                     <h4 className="font-medium">{userPlan} Plan</h4>
+                    {userData.nextBilling && (
+                      <h4 className="font-medium">
+                        Next Billing Date - {userData.nextBilling}
+                      </h4>
+                    )}
                     <p className="text-sm text-muted-foreground">
                       Limited to {maxFiles} files & {maxQuestionsPerFile}{" "}
                       questions per file

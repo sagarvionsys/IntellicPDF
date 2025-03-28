@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import PayPalButton from "./PayPalButton";
+
 import { Plan } from "@/app/(pages)/pricing/page";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { VerifyMail } from "@/actions/authentication";
 import { toast } from "@/hooks/use-toast";
+import Spinner from "./Spinner";
+import PayButton from "./PayButton";
 
 const CheckOutModal = ({
   plan,
@@ -19,17 +21,16 @@ const CheckOutModal = ({
   onClose: (isOpen: boolean) => void;
 }) => {
   const [isVerified, setIsVerified] = useState(false);
-
-  const handlePaymentSuccess = (details: any) => {
-    console.log("Payment successful:", details);
-    onClose(false);
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const email = new FormData(event.currentTarget).get("email") as string;
+    setIsLoading(true);
 
+    const email = new FormData(event.currentTarget).get("email") as string;
     const { message, success } = await VerifyMail(email);
+
+    setIsLoading(false);
 
     if (!success) {
       return toast({ variant: "destructive", title: message });
@@ -41,39 +42,39 @@ const CheckOutModal = ({
 
   return (
     <Dialog
+      modal
       open={isOpen}
       onOpenChange={(open) => {
         if (!open) {
           setIsVerified(false);
+          setIsLoading(false);
           onClose(false);
         }
       }}
     >
-      <DialogContent>
+      <DialogContent className="max-h-[30rem] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Verify Your Email</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            disabled={isVerified}
+            disabled={isVerified || isLoading}
             id="email"
             name="email"
             type="email"
             placeholder="Enter your email"
           />
           <Button
-            disabled={isVerified}
+            disabled={isVerified || isLoading}
             type="submit"
-            className="w-full font-bold text-lg"
+            className="w-full font-bold text-lg flex items-center justify-center"
           >
-            {isVerified ? "Verified" : "Verify Email"}
+            {isLoading ? <Spinner /> : isVerified ? "Verified" : "Verify Email"}
           </Button>
         </form>
 
-        {isVerified && (
-          <PayPalButton plan={plan} onSuccess={handlePaymentSuccess} />
-        )}
+        {isVerified && <PayButton plan={plan} />}
       </DialogContent>
     </Dialog>
   );

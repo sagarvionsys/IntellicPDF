@@ -17,6 +17,7 @@ export const GET = withErrorHandler(async (_: NextRequest) => {
           chats: true,
         },
       },
+      transactions: true,
     },
   });
 
