@@ -6,7 +6,6 @@ const withErrorHandler = (fn: (...args: any[]) => Promise<NextResponse>) => {
     try {
       return await fn(...args);
     } catch (error) {
-      console.error("API Error:", error);
       return ApiResponse("Internal Server Error", null, 500);
     }
   };

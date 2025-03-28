@@ -50,7 +50,7 @@ const fetchMessageFromDB = async (fileId: string) => {
       ? new HumanMessage(doc.message)
       : new AIMessage(doc.message)
   );
-  console.log(`fetched last ${chatHistory?.length} messages`);
+
   return chatHistory;
 };
 
@@ -66,25 +66,20 @@ const nameSpaceExists = async (
 const generateFile = async (fileId: string) => {
   const session = await getSessionOrThrow();
 
-  console.log("Downloading PDF...");
   const response = await fetch(getPdfUrl(session.user.id, fileId));
   if (!response.ok) throw new Error("Failed to download file.");
 
   const arrayBuffer = await response.arrayBuffer();
   const blob = new Blob([arrayBuffer], { type: "application/pdf" });
 
-  console.log("Loading PDF...");
   const loader = new PDFLoader(blob);
   const files = await loader.load();
 
-  console.log("Splitting PDF into chunks...");
   const splitter = new RecursiveCharacterTextSplitter({
     chunkSize: 100,
     chunkOverlap: 200,
   });
   const splitFile = await splitter.splitDocuments(files);
-
-  console.log(`Split into ${splitFile.length} parts`);
   return splitFile;
 };
 
@@ -93,7 +88,6 @@ export const generateEmbeddingInPineconeVectorStore = async (
 ) => {
   await getSessionOrThrow();
 
-  console.log("Initializing Pinecone index...");
   const index = await pineConeClient.index(indexName);
 
   const embedding = new OpenAIEmbeddings({
@@ -104,16 +98,13 @@ export const generateEmbeddingInPineconeVectorStore = async (
   });
 
   if (await nameSpaceExists(index, fileId)) {
-    console.log("Embedding already exists, reusing...");
     return PineconeStore.fromExistingIndex(embedding, {
       pineconeIndex: index,
       namespace: fileId,
     });
   }
 
-  console.log("Generating new embeddings...");
   const splitFile = await generateFile(fileId);
-  console.log("Saving embeddings into Pinecone...");
 
   return PineconeStore.fromDocuments(splitFile, embedding, {
     pineconeIndex: index,
@@ -130,10 +121,7 @@ const generateLangChainCompletion = async (fileId: string, input: string) => {
 
   const retriever = pineconeVectorStore.asRetriever();
 
-  console.log("fetching the user chat history from DB");
   const chatHistory = await fetchMessageFromDB(fileId);
-
-  console.log("defining a prompt template for ai");
 
   const historyAwarePrompt = ChatPromptTemplate.fromMessages([
     ...chatHistory,
@@ -144,14 +132,12 @@ const generateLangChainCompletion = async (fileId: string, input: string) => {
     ],
   ]);
 
-  console.log("creating a history-aware retriever chain");
   const historyAwareRetrieverChain = await createHistoryAwareRetriever({
     llm: model,
     retriever,
     rephrasePrompt: historyAwarePrompt,
   });
 
-  console.log("defining a prompt template for answering question");
   const historyAwareRetrieverPrompt = ChatPromptTemplate.fromMessages([
     [
       "system",
@@ -162,19 +148,15 @@ const generateLangChainCompletion = async (fileId: string, input: string) => {
     ["user", "{input}"],
   ]);
 
-  console.log("creating a document combining chain");
   const historyAwareCombineDocsChain = await createStuffDocumentsChain({
     llm: model,
     prompt: historyAwareRetrieverPrompt,
   });
 
-  console.log("creating main retriever chain");
   const conversationalRetrievalChain = await createRetrievalChain({
     retriever: historyAwareRetrieverChain,
     combineDocsChain: historyAwareCombineDocsChain,
   });
-
-  console.log("..running the chain with a simple conversation.");
 
   const reply = await conversationalRetrievalChain.invoke({
     chat_history: chatHistory,

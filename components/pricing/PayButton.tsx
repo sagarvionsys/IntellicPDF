@@ -60,8 +60,6 @@ const PayButton = ({ plan }: PayButtonProps) => {
 
       razorpay.open();
     } catch (error) {
-      console.error("Payment Error:", error);
-
       toast({
         title: "Payment Failed",
         description: "An error occurred during payment. Please try again.",

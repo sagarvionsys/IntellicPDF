@@ -21,7 +21,5 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
     },
   });
 
-  console.log("chats", chats);
-
   return ApiResponse("success", chats || {}, 200);
 });

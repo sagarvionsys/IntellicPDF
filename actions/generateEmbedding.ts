@@ -15,7 +15,6 @@ const generateEmbedding = async (fileId: string) => {
     revalidatePath("/account");
     return { success: true, message: "Embedding generation completed." };
   } catch (error) {
-    console.error("Error generating embedding:", error);
     return { success: false, message: "Embedding failed." };
   }
 };

@@ -11,7 +11,6 @@ const useConvertCurrency = async (
     const rate = res.data.rates[targetCurrency] || 1;
     return Math.round(amountUSD * rate * 100);
   } catch (error) {
-    console.error("Error fetching exchange rate:", error);
     return Math.round(amountUSD * 100);
   }
 };

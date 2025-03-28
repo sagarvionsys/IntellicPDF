@@ -79,7 +79,6 @@ const useUpload = () => {
         });
         return secureUrl;
       } catch (error) {
-        console.error("Upload failed:", error);
         toast({
           variant: "destructive",
           title: "Upload failed",

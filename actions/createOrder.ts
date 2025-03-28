@@ -47,7 +47,6 @@ const createOrder = async ({
       currency: order.currency,
     };
   } catch (error) {
-    console.error("Error creating Razorpay order:", error);
     throw new Error("Failed to create order. Please try again.");
   }
 };

@@ -19,10 +19,9 @@ const cloudinaryUpload = async (
       },
       async (error: any, result: any) => {
         if (error) {
-          console.log(error);
           return reject("Error while uploading file to Cloudinary");
         }
-        console.log("File uploaded successfully!");
+
         resolve(result.secure_url);
       }
     );

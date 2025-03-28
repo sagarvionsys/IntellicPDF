@@ -36,7 +36,6 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
           };
         } catch (error) {
-          console.error("Authorization Error:", error);
           throw new Error("Invalid credentials");
         }
       },
@@ -93,7 +92,6 @@ export const authOptions: NextAuthOptions = {
 
           return true;
         } catch (error) {
-          console.error("Google sign-in error:", error);
           return false;
         }
       }
